@@ -1,0 +1,26 @@
+[project]
+name = "ai-health-board"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.110.0",
+    "httpx>=0.27.0",
+    "loguru>=0.7.2",
+    "openai>=1.12.0",
+    "pipecat-ai[daily,openai,cartesia,webrtc]>=0.0.47",
+    "pipecatcloud>=0.0.25",
+    "pydantic>=2.6.0",
+    "python-dotenv>=1.0.1",
+    "redis[hiredis]>=5.0.1",
+    "setuptools>=80.10.2",
+    "stagehand>=1.0.0",
+    "uvicorn>=0.27.0",
+    "weave>=0.50.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.14",
+]
