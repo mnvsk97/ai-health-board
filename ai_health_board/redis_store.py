@@ -7,6 +7,7 @@ import time
 from typing import Any
 
 import redis
+from loguru import logger
 from redis.commands.search.field import NumericField, TagField, VectorField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
@@ -52,12 +53,15 @@ def _set_json(key: str, value: Any, ttl: int | None = None) -> None:
     if _use_memory():
         _MEM_STORE[key] = value
         return
-    payload = json.dumps(value)
-    client = _redis_client()
-    if ttl:
-        client.setex(key, ttl, payload)
-    else:
-        client.set(key, payload)
+    try:
+        payload = json.dumps(value)
+        client = _redis_client()
+        if ttl:
+            client.setex(key, ttl, payload)
+        else:
+            client.set(key, payload)
+    except Exception:
+        logger.exception("Redis write failed for key {}", key)
 
 
 def _get_json(key: str) -> Any | None:
@@ -69,6 +73,11 @@ def _get_json(key: str) -> Any | None:
 
 def save_scenario(scenario: Scenario) -> None:
     _set_json(f"scenario:{scenario.scenario_id}", scenario.model_dump())
+
+
+def get_scenario(scenario_id: str) -> Scenario | None:
+    data = _get_json(f"scenario:{scenario_id}")
+    return Scenario(**data) if data else None
 
 
 def list_scenarios() -> list[Scenario]:
@@ -97,12 +106,40 @@ def get_run(run_id: str) -> Run | None:
     return Run(**data) if data else None
 
 
+def list_runs(status: str | None = None, limit: int = 50) -> list[Run]:
+    """List all runs with optional status filtering.
+
+    Args:
+        status: Filter by run status (pending, running, completed, etc.)
+        limit: Maximum number of runs to return
+
+    Returns:
+        List of Run objects sorted by started_at descending
+    """
+    if _use_memory():
+        runs = [Run(**v) for k, v in _MEM_STORE.items() if k.startswith("run:")]
+    else:
+        keys = _redis_client().keys("run:*")
+        runs = []
+        for key in keys:
+            data = _get_json(key)
+            if data:
+                runs.append(Run(**data))
+    if status:
+        runs = [r for r in runs if r.status == status]
+    runs.sort(key=lambda r: r.started_at or 0, reverse=True)
+    return runs[:limit]
+
+
 def append_transcript(run_id: str, entry: TranscriptEntry) -> None:
     key = f"transcript:{run_id}"
     if _use_memory():
         _MEM_STORE.setdefault(key, []).append(entry.model_dump())
         return
-    _redis_client().rpush(key, json.dumps(entry.model_dump()))
+    try:
+        _redis_client().rpush(key, json.dumps(entry.model_dump()))
+    except Exception:
+        logger.exception("Redis transcript write failed for {}", key)
 
 
 def get_transcript(run_id: str) -> list[TranscriptEntry]:
@@ -198,6 +235,39 @@ def save_extracted_guideline(guideline: dict) -> None:
     source_url = guideline.get("source_url", "")
     key = f"guideline:extracted:{_url_to_key(source_url)}"
     _set_json(key, guideline)
+
+
+def get_extracted_guideline_by_url(url: str) -> dict | None:
+    key = f"guideline:extracted:{_url_to_key(url)}"
+    return _get_json(key)
+
+
+def list_extracted_guidelines() -> list[dict]:
+    if _use_memory():
+        return [v for k, v in _MEM_STORE.items() if k.startswith("guideline:extracted:")]
+    keys = _redis_client().keys("guideline:extracted:*")
+    guidelines: list[dict] = []
+    for key in keys:
+        data = _get_json(key)
+        if data:
+            guidelines.append(data)
+    return guidelines
+
+
+def append_pipeline_memory(entry: dict[str, Any]) -> None:
+    key = "memory:scenario_pipeline"
+    if _use_memory():
+        _MEM_STORE.setdefault(key, []).append(entry)
+        return
+    _redis_client().rpush(key, json.dumps(entry))
+
+
+def list_pipeline_memory() -> list[dict[str, Any]]:
+    key = "memory:scenario_pipeline"
+    if _use_memory():
+        return _MEM_STORE.get(key, [])
+    entries = _redis_client().lrange(key, 0, -1)
+    return [json.loads(e) for e in entries]
 
 
 def save_attack_vector(attack_id: str, payload: dict[str, Any]) -> None:
