@@ -85,6 +85,20 @@ def _extract_json(text: str) -> str:
     return text.strip()
 
 
+def _repair_json(text: str) -> str:
+    """Attempt to repair common JSON issues from LLM output."""
+    import re
+
+    # Remove trailing commas before ] or }
+    text = re.sub(r",\s*([}\]])", r"\1", text)
+
+    # Remove embedded parenthetical comments like (description here)
+    # These often break JSON when LLMs add explanatory text inside strings
+    text = re.sub(r'\s*\([^)]*\)\s*(?=[,\]\}"])', "", text)
+
+    return text
+
+
 @trace_op("wandb_inference.chat_json")
 def inference_chat_json(
     model: str | None,
@@ -96,7 +110,12 @@ def inference_chat_json(
     json_str = _extract_json(text)
     try:
         return json.loads(json_str)
-    except json.JSONDecodeError as e:
-        # Log the raw response for debugging
-        print(f"Failed to parse JSON from LLM response: {text[:500]}...")
-        raise
+    except json.JSONDecodeError:
+        # Try to repair common issues
+        repaired = _repair_json(json_str)
+        try:
+            return json.loads(repaired)
+        except json.JSONDecodeError:
+            # Log the raw response for debugging
+            print(f"Failed to parse JSON from LLM response: {text[:500]}...")
+            raise
