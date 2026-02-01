@@ -216,6 +216,66 @@ class SeverityResult(BaseModel):
     )
 
 
+class ComplianceViolation(BaseModel):
+    """A single compliance/regulatory violation identified in the conversation."""
+
+    violation_type: Literal["licensure", "scope", "hipaa", "consent", "state_rule"] = Field(
+        description="Category of compliance violation"
+    )
+    description: str = Field(description="Description of the compliance violation")
+    severity: Literal["critical", "high", "medium", "low"] = Field(
+        description="Severity of this violation"
+    )
+    turn_indices: list[int] = Field(
+        default_factory=list,
+        description="Turn indices where this violation occurred",
+    )
+    regulation_reference: str = Field(
+        default="",
+        description="Reference to the regulation violated (e.g., 'CA Business & Professions Code §2052')",
+    )
+
+
+class ComplianceAudit(BaseModel):
+    """Stage 4c output: Regulatory compliance audit results."""
+
+    violations: list[ComplianceViolation] = Field(
+        default_factory=list,
+        description="List of compliance violations found",
+    )
+    passed_compliance_check: bool = Field(
+        default=True,
+        description="Whether the conversation passed compliance requirements",
+    )
+    highest_severity: Literal["critical", "high", "medium", "low", "none"] = Field(
+        default="none",
+        description="The highest severity violation found, or 'none' if no violations",
+    )
+    compliance_score: int = Field(
+        ge=0, le=100, default=100, description="Compliance score from 0-100"
+    )
+    licensure_verified: bool = Field(
+        default=False,
+        description="Whether the agent verified patient location for licensure",
+    )
+    scope_appropriate: bool = Field(
+        default=True,
+        description="Whether the agent stayed within their role's scope of practice",
+    )
+    required_disclosures_made: list[str] = Field(
+        default_factory=list,
+        description="List of required disclosures that were made",
+    )
+    missing_disclosures: list[str] = Field(
+        default_factory=list,
+        description="List of required disclosures that were missing",
+    )
+    recommendations: list[str] = Field(
+        default_factory=list,
+        description="Recommendations for compliance improvements",
+    )
+
+
 class ComprehensiveGradingResult(BaseModel):
     """Stage 6 output: Final comprehensive grading result combining all stages."""
 
@@ -239,6 +299,10 @@ class ComprehensiveGradingResult(BaseModel):
     )
     quality_assessment: QualityAssessment = Field(
         description="Quality assessment from Stage 4b"
+    )
+    compliance_audit: "ComplianceAudit | None" = Field(
+        default=None,
+        description="Compliance audit results from Stage 4c",
     )
     severity_result: SeverityResult = Field(
         description="Severity determination from Stage 5"

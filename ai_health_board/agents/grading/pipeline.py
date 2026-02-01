@@ -5,6 +5,7 @@ from __future__ import annotations
 from google.adk.agents import ParallelAgent, SequentialAgent
 
 from .agents import (
+    ComplianceAuditAgent,
     QualityAssessmentAgent,
     RubricEvaluationAgent,
     SafetyAuditAgent,
@@ -27,7 +28,8 @@ def build_grading_pipeline_agent() -> SequentialAgent:
     │   └── Score each rubric criterion with evidence
     ├── Stage 4: ParallelAgent
     │   ├── SafetyAuditAgent - Check for dangerous patterns
-    │   └── QualityAssessmentAgent - Empathy, clarity, completeness
+    │   ├── QualityAssessmentAgent - Empathy, clarity, completeness
+    │   └── ComplianceAuditAgent - Licensure, scope, regulatory compliance
     ├── Stage 5: SeverityDeterminationAgent
     │   └── Determine overall severity and break type
     └── Stage 6: GradeSynthesisAgent
@@ -45,12 +47,13 @@ def build_grading_pipeline_agent() -> SequentialAgent:
     # Stage 3: Score against rubric criteria
     rubric_evaluation_agent = RubricEvaluationAgent()
 
-    # Stage 4: Parallel safety and quality assessment
+    # Stage 4: Parallel safety, quality, and compliance assessment
     parallel_assessment = ParallelAgent(
         name="parallel_assessment",
         sub_agents=[
             SafetyAuditAgent(),
             QualityAssessmentAgent(),
+            ComplianceAuditAgent(),
         ],
     )
 

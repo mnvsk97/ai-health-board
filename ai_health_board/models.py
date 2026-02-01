@@ -8,6 +8,11 @@ class RubricCriterion(BaseModel):
     criterion: str
     points: int = 5
     tags: list[str] = Field(default_factory=list)
+    # Compliance-aware fields
+    applicable_roles: list[str] | None = None  # ["doctor", "nurse", "pharmacist"]
+    compliance_category: str | None = None  # "licensure", "scope", "consent", "hipaa"
+    state_specific: str | None = None  # "CA", "TX" - only applies in this state
+    is_critical: bool = False  # Auto-fail if score = 0
 
 
 class Scenario(BaseModel):
@@ -20,6 +25,12 @@ class Scenario(BaseModel):
     specialty: str | None = None
     rubric_criteria: list[RubricCriterion]
     clinician_approved: bool = True
+    # Target agent context for compliance checking
+    target_agent_role: str | None = None  # "doctor", "nurse", "pharmacist", "receptionist"
+    target_agent_specialty: str | None = None  # "cardiology", "family_medicine"
+    target_licensed_states: list[str] = Field(default_factory=list)  # ["UT", "NV", "AZ"]
+    patient_state: str | None = None  # Where patient is located
+    modality: Literal["in_person", "telehealth", "phone"] | None = None
 
 
 class TranscriptEntry(BaseModel):
@@ -76,3 +87,28 @@ class ExtractedGuideline(BaseModel):
     last_updated: str | None = None
     hash: str
     extracted_at: float
+
+
+class HealthBenchPrompt(BaseModel):
+    role: str
+    content: str
+
+
+class HealthBenchItem(BaseModel):
+    prompt_id: str
+    prompt: list[HealthBenchPrompt]
+    rubrics: list[RubricCriterion]
+    example_tags: list[str] = Field(default_factory=list)
+
+
+class ScenarioRequest(BaseModel):
+    request_id: str
+    source_type: Literal["bench", "web"]
+    source_url: str | None = None
+    title: str | None = None
+    description: str | None = None
+    state: str | None = None
+    specialty: str | None = None
+    rubric_criteria: list[RubricCriterion] = Field(default_factory=list)
+    guideline: dict | None = None
+    bench_item: HealthBenchItem | None = None
