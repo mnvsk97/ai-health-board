@@ -22,6 +22,7 @@ class CreateBatchRequest(BaseModel):
     agent_type: str = "intake"
     concurrency: int = 10
     turns: int = 3
+    max_scenarios: int | None = None
 
 app = FastAPI(title="AI Health Board")
 
@@ -285,6 +286,10 @@ async def create_batch(payload: CreateBatchRequest) -> dict:
 
     if not scenario_ids:
         raise HTTPException(status_code=400, detail="No scenarios available to run")
+
+    # Apply max_scenarios limit if specified
+    if payload.max_scenarios and payload.max_scenarios > 0:
+        scenario_ids = scenario_ids[:payload.max_scenarios]
 
     # Validate concurrency
     concurrency = max(1, min(payload.concurrency, 20))

@@ -288,6 +288,7 @@ export interface CreateBatchRunPayload {
   agent_type?: string;
   concurrency?: number;
   turns?: number;
+  max_scenarios?: number;
 }
 
 export interface CreateBatchRunResponse {

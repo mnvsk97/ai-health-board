@@ -34,6 +34,7 @@ export default function NewTestPage() {
   const [batchMode, setBatchMode] = useState(false);
   const [concurrency, setConcurrency] = useState(10);
   const [turns, setTurns] = useState(3);
+  const [maxScenarios, setMaxScenarios] = useState(10);
 
   const handleSubmit = async () => {
     if (selectedScenarios.length === 0 && !batchMode) {
@@ -52,6 +53,7 @@ export default function NewTestPage() {
           agent_type: agentType,
           concurrency,
           turns,
+          max_scenarios: maxScenarios,
         });
         router.push(`/batches/${response.batch_id}`);
       } else {
@@ -187,6 +189,23 @@ export default function NewTestPage() {
                         max={10}
                         step={1}
                       />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label className="flex justify-between">
+                        <span>Max Scenarios</span>
+                        <span className="text-muted-foreground">{maxScenarios} scenarios</span>
+                      </Label>
+                      <Slider
+                        value={[maxScenarios]}
+                        onValueChange={(v) => setMaxScenarios(v[0])}
+                        min={1}
+                        max={50}
+                        step={1}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Limit the number of scenarios to run in this batch
+                      </p>
                     </div>
                   </>
                 )}
