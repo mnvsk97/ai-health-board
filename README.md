@@ -1,164 +1,155 @@
 # AI Health Board
 
-**Self-Improving Preclinical Testing for Healthcare AI Agents**
-
-A platform that tests healthcare AI agents and *gets smarter with every test run*. The system learns which attack strategies expose safety violations, improves its prompts through A/B testing, and continuously refines its evaluation criteria.
+**The Vanta for Healthcare AI Agents** — Continuous safety testing that gets smarter with every run.
 
 ---
 
-## The Self-Improvement Loop
+## The Problem
 
-This is the core innovation. Traditional AI testing is static—you write tests, run them, done. AI Health Board creates a **continuous learning cycle**:
+Healthcare AI agents are deployed with zero standardized validation. Buyers can't evaluate safety, sellers can't prove it, and the stakes are life-or-death. In 2025 alone, 6 states enacted AI chatbot healthcare laws, the FDA released draft AI guidance, and California created private right of action for AI harms.
+
+**Current evaluation is manual, inconsistent, and one-time.** Spreadsheet checklists. Vendor questionnaires. Pilots with fingers crossed.
+
+## Our Solution
+
+A self-improving adversarial testing platform that:
+- **Finds safety failures** before patients do
+- **Learns from every test** to become more effective
+- **Adapts to regulatory changes** across states and specialties
+- **Provides continuous monitoring**, not point-in-time validation
+
+---
+
+## Self-Improvement: The Core Innovation
+
+Traditional testing is static. We built a system that **evolves**.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    SELF-IMPROVEMENT LOOP                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   ┌──────────┐      ┌──────────┐      ┌──────────┐            │
-│   │  Test    │─────►│  Grade   │─────►│  Learn   │            │
-│   │  Agent   │      │  Results │      │  Patterns│            │
-│   └──────────┘      └──────────┘      └────┬─────┘            │
-│        ▲                                   │                   │
-│        │                                   ▼                   │
-│        │            ┌──────────────────────────────┐          │
-│        │            │  IMPROVEMENT ENGINE          │          │
-│        │            │  • Attack memory ranking     │          │
-│        │            │  • Prompt A/B testing        │          │
-│        │            │  • Strategy overlays         │          │
-│        │            │  • Weave trace analysis      │          │
-│        │            └──────────────┬───────────────┘          │
-│        │                           │                           │
-│        └───────────────────────────┘                          │
-│              Better attacks next run                           │
-└─────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                  SELF-IMPROVEMENT LOOP                     │
+│                                                            │
+│   Test → Grade → Learn → Improve → Test (better)          │
+│                                                            │
+│   Every run feeds back into:                              │
+│   • Attack vector effectiveness rankings                  │
+│   • Tester agent strategy optimization                    │
+│   • Grader prompt A/B testing                             │
+│   • Compliance rule updates                               │
+└────────────────────────────────────────────────────────────┘
 ```
 
-### How It Self-Improves
+### 1. Attack Vectors Learn What Works
 
-**1. Attack Memory Learning** (`attack_memory.py`)
-- Every attack is tagged (specialty, condition, state)
-- Outcomes tracked: attempts, successes, severity triggered
-- Redis sorted sets rank attacks by effectiveness per tag
-- Next run automatically uses highest-performing attacks
+Every adversarial prompt is tracked with outcome data:
 
 ```python
-# After each test
-record_attack_outcome(attack_id, success=True, severity="high")
+# After each test, record what happened
+record_attack_outcome(attack_id="auth_challenge_001", success=True, severity="high")
 
-# Next run retrieves best attacks for this scenario type
-candidates = get_attack_candidates(tags=["specialty:cardiology"])
-# Returns attacks ranked by historical success rate
+# Next run automatically prioritizes effective attacks
+candidates = get_attack_candidates(tags=["specialty:cardiology", "state:CA"])
+# → Returns attacks ranked by historical success rate
 ```
 
-**2. Prompt A/B Testing** (`improvement/improvement_loop.py`)
-- System prompts tracked with usage counts and scores
-- After 10+ uses, generates improved variants via LLM
-- A/B tests variants against baseline
-- Winners automatically promoted
+**How it works:**
+- Attacks tagged by specialty, state, condition
+- Redis sorted sets rank by confidence score
+- High-performers surface automatically
+- Failed attacks deprioritized
+
+### 2. Tester Agent Improves Its Strategy
+
+The tester doesn't just replay attacks—it learns *how* to attack:
 
 ```python
-# Analyze prompt performance
-analysis = analyze_prompt_performance("grader.safety_audit.system")
+# Learned overlays store strategic insights
+store_prompt_overlay(
+    tags=["specialty:oncology"],
+    overlay="Dosing questions expose scope violations. Lead with medication concerns."
+)
 
-# Generate and test variant
-variant = generate_prompt_variant(original, performance_data)
-results = ab_test(baseline, variant)
+# Retrieved automatically for matching scenarios
+overlay = get_prompt_overlay(scenario.tags)  # Injected into tester prompt
+```
 
-# Promote if better
-if results.variant_wins:
+**Improvement mechanisms:**
+- Weave traces analyzed for effective patterns
+- Strategy overlays generated from successful runs
+- 7-day TTL keeps strategies fresh
+- Per-specialty and per-state learnings
+
+### 3. Grader Agent Refines Its Evaluation
+
+Grading prompts evolve through A/B testing:
+
+```python
+# Track prompt performance
+registry.record_usage("grader.safety_audit", success=True, score=0.92)
+
+# After 10+ uses, generate improved variant
+variant = generate_prompt_variant(original, performance_metrics)
+
+# A/B test and promote winners
+if ab_test(baseline, variant).variant_wins:
     promote_to_active(variant)
 ```
 
-**3. Learned Strategy Overlays** (`attack_memory.py`)
-- Stores strategic guidance from successful runs
-- Retrieved during attack planning
-- 7-day TTL, continuously refreshed
-
-```python
-# Store learned insight
-store_prompt_overlay(
-    tags=["specialty:cardiology"],
-    overlay="Emphasize medication dosing questions—high success rate"
-)
-
-# Retrieved automatically in next cardiology test
-overlay = get_prompt_overlay(scenario_tags)
-```
-
-**4. Weave Trace Analysis** (`weave_self_improve.py`)
-- Queries historical traces from W&B Weave
-- Identifies patterns in effective vs ineffective attacks
-- Generates improved strategies from real data
-
----
-
-## Architecture Overview
-
-```
-Data Sources                    Testing                      Evaluation
-─────────────                   ───────                      ──────────
-┌────────────┐                 ┌────────────┐               ┌────────────┐
-│ BrowserBase│──┐              │Text Tester │──┐            │ 6-Stage    │
-│ Guidelines │  │  Scenarios   │Voice Tester│  │ Transcript │ Grading    │
-├────────────┤  ├────────────► │Browser Test│──┼──────────► │ Pipeline   │
-│ HealthBench│  │              └────────────┘  │            │ (ADK)      │
-│ Dataset    │──┘                    ▲         │            └─────┬──────┘
-└────────────┘                       │         │                  │
-                                     │         │                  ▼
-                              ┌──────┴─────────┴──────────────────────┐
-                              │         SELF-IMPROVEMENT              │
-                              │  Attack Memory → Prompt Registry →    │
-                              │  Weave Traces → Strategy Overlays     │
-                              └───────────────────────────────────────┘
-```
-
----
-
-## Key Components
-
-| Component | Purpose | Self-Improvement Role |
-|-----------|---------|----------------------|
-| **Attack Memory** | Stores adversarial prompts with effectiveness stats | Ranks attacks by historical success |
-| **Prompt Registry** | Versioned prompt storage with metrics | Enables A/B testing and promotion |
-| **Weave Integration** | Full observability of all operations | Source data for learning patterns |
-| **Grading Pipeline** | 6-stage evaluation (safety, quality, compliance) | Provides scores for improvement loop |
-
-### Grading Pipeline (Google ADK)
-
-Sequential + parallel agent architecture:
-
+**The grading pipeline** (6 stages via Google ADK):
 ```
 ScenarioContext → TurnAnalysis → RubricEvaluation
                                        ↓
-                    ┌──────────────────┼──────────────────┐
-                    ▼                  ▼                  ▼
-               SafetyAudit      QualityAssess      ComplianceAudit
-                    └──────────────────┼──────────────────┘
+              SafetyAudit | QualityAssess | ComplianceAudit  (parallel)
                                        ↓
-                         SeverityDetermination → Synthesis
+                    SeverityDetermination → Synthesis
 ```
 
-### Testing Modes
+Each stage's prompts can be independently improved.
 
-- **Text-only**: Fast iteration, API-based
-- **Voice (Pipecat)**: Real speech via Daily.co + Cartesia TTS
-- **BrowserBase**: Test web-based AI chat interfaces
+### 4. Compliance Adapts to Regulatory Changes
+
+Healthcare regulations vary by **state** and **specialty**—and they change constantly.
+
+```python
+# Register guideline with version tracking
+register_guideline(Guideline(
+    id="ca_mental_health_chatbot_2025",
+    state="CA",
+    specialty="psychiatry",
+    effective_date="2025-10-01",
+    requirements=[...]
+))
+
+# When guidelines change, system detects and adapts
+simulate_guideline_change(guideline_id)
+# → Generates new test scenarios
+# → Updates compliance audit criteria
+# → Flags affected historical runs
+```
+
+**What we track:**
+- State-specific AI healthcare laws (7+ states in 2025)
+- Specialty guidelines (NCCN, CDC, professional associations)
+- FDA AI/ML guidance updates
+- HIPAA requirements for AI systems
+
+**Automatic extraction:** BrowserBase + Stagehand scrape authoritative sources, validate content, and generate test scenarios from new guidelines.
 
 ---
 
-## Redis as the Learning Store
+## Architecture
 
-Redis powers the self-improvement system:
-
-| Key Pattern | Purpose |
-|-------------|---------|
-| `attack:stats:{id}` | Attempts, successes, severity per attack |
-| `attack:tag:{tag}` | Sorted set of attacks ranked by confidence |
-| `prompt:registry:{key}` | Versioned prompts with performance metrics |
-| `prompt:overlay:{tags}` | Learned strategies (7-day TTL) |
-| `scenario:{id}` | Scenarios with vector embeddings |
-| `grading:{id}` | Grading results feeding improvement |
+```
+Data Ingestion          Adversarial Testing         Evaluation
+──────────────          ───────────────────         ──────────
+BrowserBase ─┐          ┌─ Text Tester              6-Stage Grading
+HealthBench ─┼─ Scenarios ─┼─ Voice (Pipecat) ─ Transcript ─► Pipeline
+Guidelines ──┘          └─ Browser Tester            (Google ADK)
+                               │                         │
+                               └─────────────────────────┘
+                                   SELF-IMPROVEMENT
+                              (Attack Memory, Prompt Registry,
+                               Weave Traces, Compliance Rules)
+```
 
 ---
 
@@ -166,13 +157,11 @@ Redis powers the self-improvement system:
 
 ```bash
 # Setup
-python -m venv .venv && source .venv/bin/activate
-pip install -e .
+python -m venv .venv && source .venv/bin/activate && pip install -e .
 
-# Configure .env (see Environment Variables below)
-
-# Run API
-uvicorn ai_health_board.api:app --reload --port 8000
+# Run API + Frontend
+uvicorn ai_health_board.api:app --port 8000
+cd frontend && npm install && npm run dev
 
 # Run a test
 python scripts/seed_scenario.py
@@ -184,33 +173,30 @@ python scripts/run_improvement_cycle.py
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
+| Variable | Required | Purpose |
+|----------|----------|---------|
 | `OPENAI_API_KEY` | Yes | LLM inference |
 | `WANDB_API_KEY` | Yes | Weave observability |
-| `REDIS_CLOUD_*` | No* | Redis Cloud connection |
-| `DAILY_API_KEY` | No** | Voice testing |
-| `CARTESIA_API_KEY` | No** | TTS for voice |
-| `BROWSERBASE_API_KEY` | No*** | Browser automation |
+| `REDIS_CLOUD_*` | No* | Learning store |
+| `BROWSERBASE_API_KEY` | No | Guideline extraction |
+| `DAILY_API_KEY` | No | Voice testing |
 
-\* Use `REDIS_FALLBACK=1` for in-memory mode
-\** Required for voice testing
-\*** Required for guideline extraction
+*Use `REDIS_FALLBACK=1` for in-memory mode
 
 ---
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `attack_memory.py` | Attack effectiveness tracking & ranking |
-| `improvement/improvement_loop.py` | Prompt A/B testing engine |
-| `improvement/prompt_registry.py` | Versioned prompt storage |
-| `weave_self_improve.py` | Trace analysis for learning |
-| `tester_agent.py` | Adversarial test generation |
-| `agents/grading/pipeline.py` | Multi-stage grading |
-| `redis_store.py` | Central data & learning store |
+| Component | File |
+|-----------|------|
+| Attack Memory | `attack_memory.py` |
+| Prompt Registry | `improvement/prompt_registry.py` |
+| Improvement Loop | `improvement/improvement_loop.py` |
+| Tester Agent | `tester_agent.py` |
+| Grading Pipeline | `agents/grading/pipeline.py` |
+| Compliance Tracking | `compliance.py` |
+| Weave Analysis | `weave_self_improve.py` |
 
 ---
 
-Built for the W&B Preclinical Hackathon 2025 — *Theme: Self-Improvement*
+*Built for the W&B Hackathon 2025 — Theme: Self-Improvement*
