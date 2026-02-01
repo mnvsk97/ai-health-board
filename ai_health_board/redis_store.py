@@ -199,6 +199,151 @@ def save_extracted_guideline(guideline: dict) -> None:
     key = f"guideline:extracted:{_url_to_key(source_url)}"
     _set_json(key, guideline)
 
+
+def save_attack_vector(attack_id: str, payload: dict[str, Any]) -> None:
+    _set_json(f"attack:global:{attack_id}", payload)
+
+
+def get_attack_vector(attack_id: str) -> dict[str, Any] | None:
+    return _get_json(f"attack:global:{attack_id}")
+
+
+def _get_attack_stats(attack_id: str) -> dict[str, Any]:
+    key = f"attack:stats:{attack_id}"
+    if _use_memory():
+        return _MEM_STORE.get(key, {"attempts": 0, "successes": 0, "severity_total": 0.0})
+    stats = _redis_client().hgetall(key)
+    return {
+        "attempts": int(stats.get("attempts") or 0),
+        "successes": int(stats.get("successes") or 0),
+        "severity_total": float(stats.get("severity_total") or 0.0),
+    }
+
+
+def update_attack_stats(
+    attack_id: str,
+    success: bool,
+    severity: float,
+    tags: list[str],
+) -> dict[str, Any]:
+    key = f"attack:stats:{attack_id}"
+    if _use_memory():
+        stats = _MEM_STORE.setdefault(key, {"attempts": 0, "successes": 0, "severity_total": 0.0})
+        stats["attempts"] += 1
+        if success:
+            stats["successes"] += 1
+        stats["severity_total"] += float(severity)
+    else:
+        client = _redis_client()
+        pipe = client.pipeline()
+        pipe.hincrby(key, "attempts", 1)
+        if success:
+            pipe.hincrby(key, "successes", 1)
+        pipe.hincrbyfloat(key, "severity_total", float(severity))
+        pipe.execute()
+
+    stats = _get_attack_stats(attack_id)
+    attempts = max(int(stats.get("attempts") or 0), 1)
+    successes = int(stats.get("successes") or 0)
+    severity_avg = float(stats.get("severity_total") or 0.0) / attempts
+    success_rate = successes / attempts
+    confidence = success_rate * (0.5 + 0.5 * severity_avg)
+
+    all_tags = list({*(tags or []), "global"})
+    if _use_memory():
+        for tag in all_tags:
+            tag_key = f"attack:tag:{tag}"
+            ranking = _MEM_STORE.setdefault(tag_key, {})
+            ranking[attack_id] = confidence
+    else:
+        client = _redis_client()
+        for tag in all_tags:
+            client.zadd(f"attack:tag:{tag}", {attack_id: confidence})
+
+    return {
+        "attempts": attempts,
+        "successes": successes,
+        "success_rate": success_rate,
+        "severity_avg": severity_avg,
+        "confidence": confidence,
+    }
+
+
+def get_attack_candidates(
+    tags: list[str] | None = None,
+    limit: int = 3,
+    min_confidence: float = 0.0,
+) -> list[dict[str, Any]]:
+    tag_list = tags or ["global"]
+    candidates: dict[str, float] = {}
+
+    if _use_memory():
+        for tag in tag_list:
+            tag_key = f"attack:tag:{tag}"
+            ranking = _MEM_STORE.get(tag_key, {})
+            for attack_id, score in sorted(ranking.items(), key=lambda item: item[1], reverse=True)[:limit]:
+                candidates[attack_id] = max(candidates.get(attack_id, 0.0), float(score))
+    else:
+        client = _redis_client()
+        for tag in tag_list:
+            tag_key = f"attack:tag:{tag}"
+            results = client.zrevrangebyscore(
+                tag_key,
+                "+inf",
+                min_confidence,
+                start=0,
+                num=limit,
+                withscores=True,
+            )
+            for attack_id, score in results:
+                candidates[str(attack_id)] = max(candidates.get(str(attack_id), 0.0), float(score))
+
+    ordered = sorted(candidates.items(), key=lambda item: item[1], reverse=True)[:limit]
+    payloads: list[dict[str, Any]] = []
+    for attack_id, score in ordered:
+        payload = get_attack_vector(attack_id) or {"attack_id": attack_id}
+        stats = _get_attack_stats(attack_id)
+        attempts = int(stats.get("attempts") or 0)
+        successes = int(stats.get("successes") or 0)
+        severity_avg = (
+            float(stats.get("severity_total") or 0.0) / attempts
+            if attempts
+            else 0.0
+        )
+        payloads.append(
+            {
+                "attack_id": attack_id,
+                "prompt": payload.get("prompt"),
+                "category": payload.get("category"),
+                "tags": payload.get("tags", []),
+                "confidence": score,
+                "attempts": attempts,
+                "success_rate": successes / attempts if attempts else 0.0,
+                "severity_avg": severity_avg,
+            }
+        )
+    return payloads
+
+
+def save_prompt_overlay(
+    tags: list[str],
+    strategy_text: str,
+    confidence: float,
+    ttl_seconds: int,
+) -> None:
+    payload = {
+        "tags": tags,
+        "strategy": strategy_text,
+        "confidence": confidence,
+    }
+    key = f"prompt:overlay:{':'.join(tags) if tags else 'global'}"
+    _set_json(key, payload, ttl=ttl_seconds)
+
+
+def get_prompt_overlay(tags: list[str]) -> dict[str, Any] | None:
+    key = f"prompt:overlay:{':'.join(tags) if tags else 'global'}"
+    return _get_json(key)
+
     # Also maintain a URL index for lookups
     index_key = f"guideline:url_index:{_url_to_key(source_url)}"
     _set_json(index_key, {"url": source_url, "key": key})
