@@ -1,0 +1,23 @@
+[
+  {
+    "strategy": "broad",
+    "queries": 1,
+    "results": 10,
+    "content_kb": 867.0546875,
+    "unique_domains": 10
+  },
+  {
+    "strategy": "targeted",
+    "queries": 4,
+    "results": 20,
+    "content_kb": 605.2900390625,
+    "unique_domains": 15
+  },
+  {
+    "strategy": "domain-focused",
+    "queries": 3,
+    "results": 15,
+    "content_kb": 1102.439453125,
+    "unique_domains": 3
+  }
+]

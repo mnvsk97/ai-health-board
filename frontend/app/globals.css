@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Backgrounds */
+    --background: 0 0% 100%;
+    --card: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --muted: 220 13% 97%;
+
+    /* Text */
+    --foreground: 240 10% 4%;
+    --card-foreground: 240 10% 4%;
+    --popover-foreground: 240 10% 4%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Borders */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 240 5% 10%;
+
+    /* Primary Actions */
+    --primary: 240 5% 10%;
+    --primary-foreground: 0 0% 98%;
+
+    /* Secondary */
+    --secondary: 220 13% 97%;
+    --secondary-foreground: 240 5% 10%;
+
+    /* Accent */
+    --accent: 220 13% 97%;
+    --accent-foreground: 240 5% 10%;
+
+    /* Destructive */
+    --destructive: 0 70% 35%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Status Colors (Healthcare-appropriate) */
+    --pass: 142 76% 26%;
+    --warning: 37 91% 41%;
+    --fail: 0 70% 35%;
+
+    /* Severity Levels */
+    --critical: 0 70% 35%;
+    --high: 24 95% 43%;
+    --medium: 37 91% 41%;
+    --low: 220 9% 46%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 6% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 6% 10%;
+    --popover-foreground: 0 0% 98%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 220 9% 60%;
+    --border: 240 4% 20%;
+    --input: 240 4% 20%;
+    --ring: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5% 10%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

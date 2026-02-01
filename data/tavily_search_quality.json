@@ -1,0 +1,234 @@
+[
+  {
+    "category": "general",
+    "query": "CDC clinical guidelines emergency protocols",
+    "results": [
+      {
+        "title": "Clinical Guidance and Resources for Professionals - CDC",
+        "url": "https://www.cdc.gov/radiation-emergencies/hcp/clinical-guidance/index.html",
+        "snippet_len": 1305,
+        "raw_len": 3553,
+        "quality_score": 2,
+        "has_recommendations": false,
+        "has_red_flags": true,
+        "has_clinical": true
+      },
+      {
+        "title": "Emergency Management Pocket Guide for Clinicians - CDC",
+        "url": "https://www.cdc.gov/radiation-emergencies/hcp/clinical-guidance/pocket-guide.html",
+        "snippet_len": 1473,
+        "raw_len": 2097,
+        "quality_score": 1,
+        "has_recommendations": false,
+        "has_red_flags": true,
+        "has_clinical": false
+      },
+      {
+        "title": "Emergency Preparedness and Response | CDC",
+        "url": "https://www.cdc.gov/emergency/index.html",
+        "snippet_len": 989,
+        "raw_len": 1677,
+        "quality_score": 1,
+        "has_recommendations": false,
+        "has_red_flags": true,
+        "has_clinical": false
+      },
+      {
+        "title": "Emergency Preparedness and Response - CDC",
+        "url": "https://www.cdc.gov/niosh/emres/",
+        "snippet_len": 1061,
+        "raw_len": 1689,
+        "quality_score": 1,
+        "has_recommendations": false,
+        "has_red_flags": true,
+        "has_clinical": false
+      },
+      {
+        "title": "Guidelines and Guidance Library | Infection Control - CDC",
+        "url": "https://www.cdc.gov/infection-control/hcp/guidance/index.html",
+        "snippet_len": 1977,
+        "raw_len": 18100,
+        "quality_score": 2,
+        "has_recommendations": true,
+        "has_red_flags": false,
+        "has_clinical": true
+      }
+    ],
+    "total_raw_kb": 26.48046875,
+    "avg_quality": 1.4
+  },
+  {
+    "category": "specialty",
+    "query": "cardiology heart failure treatment guidelines 2024",
+    "results": [
+      {
+        "title": "2024 update in heart failure - PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38806171/",
+        "snippet_len": 2198,
+        "raw_len": 6248,
+        "quality_score": 2,
+        "has_recommendations": true,
+        "has_red_flags": false,
+        "has_clinical": true
+      },
+      {
+        "title": "2024 ACC Expert Consensus Decision Pathway for ...",
+        "url": "https://www.sciencedirect.com/science/article/pii/S0735109723083547",
+        "snippet_len": 1262,
+        "raw_len": 2667,
+        "quality_score": 1,
+        "has_recommendations": false,
+        "has_red_flags": false,
+        "has_clinical": true
+      },
+      {
+        "title": "Guidelines & Clinical Updates | CHFS",
+        "url": "https://heartfailure.ca/education/guidelines-clinical-updates",
+        "snippet_len": 1948,
+        "raw_len": 23339,
+        "quality_score": 2,
+        "has_recommendations": true,
+        "has_red_flags": false,
+        "has_clinical": true
+      },
+      {
+        "title": "Focus on Heart Failure | HFpEF: Where We Stand in 2025",
+        "url": "https://www.acc.org/Latest-in-Cardiology/Articles/2025/06/01/01/Focus-on-Heart-Failure-HFpEF",
+        "snippet_len": 1634,
+        "raw_len": 35692,
+        "quality_score": 2,
+        "has_recommendations": true,
+        "has_red_flags": false,
+        "has_clinical": true
+      },
+      {
+        "title": "2024 Update to the 2020 ACC/AHA Clinical Performance and ...",
+        "url": "https://professional.heart.org/en/science-news/2024-update-to-the-2020-acc-aha-clinical-performance-and-quality-measures-for-adults-with-hf",
+        "snippet_len": 671,
+        "raw_len": 12722,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      }
+    ],
+    "total_raw_kb": 78.77734375,
+    "avg_quality": 2.0
+  },
+  {
+    "category": "region",
+    "query": "California medical board telemedicine regulations",
+    "results": [
+      {
+        "title": "[PDF] Telemedicine Policy Update - California Telehealth Resource Cent",
+        "url": "https://caltrc.org/wp-content/uploads/2023/01/CTRC-Telehealth-Presentation-March-2023-FINAL.pdf",
+        "snippet_len": 2098,
+        "raw_len": 36868,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      },
+      {
+        "title": "California Telehealth Regulations and Laws - Wheel",
+        "url": "https://www.wheel.com/state-telehealth-regulations/california",
+        "snippet_len": 2036,
+        "raw_len": 6243,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      },
+      {
+        "title": "[PDF] cma health law library - The Cooperative of American Physicians",
+        "url": "https://www.capphysicians.com/sites/default/files/3300_Telehealth.pdf",
+        "snippet_len": 2408,
+        "raw_len": 65370,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      },
+      {
+        "title": "Telehealth | Medical Board of California - CA.gov",
+        "url": "https://www.mbc.ca.gov/Resources/Medical-Resources/telehealth.aspx",
+        "snippet_len": 1376,
+        "raw_len": 5529,
+        "quality_score": 2,
+        "has_recommendations": true,
+        "has_red_flags": false,
+        "has_clinical": true
+      },
+      {
+        "title": "California State Telehealth Laws - CCHP",
+        "url": "https://www.cchpca.org/california/",
+        "snippet_len": 2138,
+        "raw_len": 244614,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      }
+    ],
+    "total_raw_kb": 350.21875,
+    "avg_quality": 2.8
+  },
+  {
+    "category": "role",
+    "query": "nurse practitioner scope of practice prescribing authority",
+    "results": [
+      {
+        "title": "[PDF] State Law Chart: Nurse Practitioner Practice Authority",
+        "url": "https://www.ama-assn.org/sites/ama-assn.org/files/corp/media-browser/specialty%20group/arc/ama-chart-np-practice-authority.pdf",
+        "snippet_len": 2385,
+        "raw_len": 72021,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      },
+      {
+        "title": "[PDF] a summary of nurse practitioner scope of practice laws, in - CDC",
+        "url": "https://www.cdc.gov/cardiovascular-resources/media/pdfs/SLFS_NSOP_508.pdf",
+        "snippet_len": 2403,
+        "raw_len": 25376,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      },
+      {
+        "title": "[PDF] State Law Chart: Nurse Practitioner Prescriptive Authority",
+        "url": "https://www.ama-assn.org/sites/ama-assn.org/files/corp/media-browser/specialty%20group/arc/ama-chart-np-prescriptive-authority.pdf",
+        "snippet_len": 2405,
+        "raw_len": 35131,
+        "quality_score": 3,
+        "has_recommendations": true,
+        "has_red_flags": true,
+        "has_clinical": true
+      },
+      {
+        "title": "[PDF] CNS Prescriptive Authority by State",
+        "url": "https://www.nacns.org/wp-content/uploads/2016/11/5-AuthorityTable.pdf",
+        "snippet_len": 1855,
+        "raw_len": 1765,
+        "quality_score": 1,
+        "has_recommendations": false,
+        "has_red_flags": false,
+        "has_clinical": true
+      },
+      {
+        "title": "Mid-Level Practitioners Authorization by State",
+        "url": "https://www.deadiversion.usdoj.gov/drugreg/practioners/practioners.html",
+        "snippet_len": 1635,
+        "raw_len": 2560,
+        "quality_score": 1,
+        "has_recommendations": false,
+        "has_red_flags": false,
+        "has_clinical": true
+      }
+    ],
+    "total_raw_kb": 133.6455078125,
+    "avg_quality": 2.2
+  }
+]

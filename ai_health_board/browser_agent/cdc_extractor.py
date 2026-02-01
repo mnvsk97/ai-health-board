@@ -79,13 +79,20 @@ class GuidelineExtractor:
         )
 
         # Extract the data from the response
-        guideline = {}
+        guideline: dict[str, Any] = {}
         if hasattr(result, "data") and result.data:
             guideline = dict(result.data) if hasattr(result.data, "__iter__") else {}
         elif hasattr(result, "model_dump"):
             guideline = result.model_dump()
+        elif hasattr(result, "model_extra"):
+            guideline = dict(result.model_extra or {})
         elif isinstance(result, dict):
             guideline = result
+
+        if isinstance(guideline, dict) and "result" in guideline:
+            nested = guideline.get("result")
+            if isinstance(nested, dict):
+                guideline = nested
 
         # Add the source URL
         guideline["source_url"] = url

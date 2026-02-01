@@ -24,7 +24,7 @@ class StagehandClient:
         self._session: Session | None = None
         self._session_id: str | None = None
         self._settings = load_settings()
-        self._model_name = model_name
+        self._model_name = self._settings.get("stagehand_model") or model_name
 
     def start(self) -> "StagehandClient":
         """Initialize Stagehand client and start a browser session.
@@ -36,7 +36,11 @@ class StagehandClient:
 
         api_key = str(self._settings.get("browserbase_api_key") or "")
         project_id = str(self._settings.get("browserbase_project_id") or "")
-        model_api_key = str(self._settings.get("openai_api_key") or "")
+        model_api_key = str(
+            self._settings.get("stagehand_model_api_key")
+            or self._settings.get("openai_api_key")
+            or ""
+        )
 
         self._client = Stagehand(
             browserbase_api_key=api_key,

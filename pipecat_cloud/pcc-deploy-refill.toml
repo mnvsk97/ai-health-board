@@ -1,0 +1,9 @@
+# Pipecat Cloud Deployment (Refill Agent)
+# Deploy with: pcc deploy -c pipecat_cloud/pcc-deploy-refill.toml
+
+agent_name = "preclinical-refill-agent"
+image = "mnvsk97/ai-health-board-agent:1.0"
+secret_set = "ai-health-board-secrets"
+
+[scaling]
+min_instances = 0

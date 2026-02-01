@@ -1,0 +1,80 @@
+{
+  "results": [
+    {
+      "source_name": "CDC",
+      "category": "general",
+      "crawl_urls": 0,
+      "crawl_content_kb": 0.0,
+      "crawl_error": null,
+      "search_urls": 10,
+      "search_content_kb": 123.7998046875,
+      "search_error": null,
+      "map_urls": 0,
+      "map_error": null,
+      "extract_content_kb": 0,
+      "extract_error": null,
+      "sample_search_titles": [
+        "Guideline Recommendations and Guiding Principles - CDC",
+        "CDC Clinical Practice Guideline for Prescribing Opioids for ",
+        "STI Treatment Guidelines - CDC"
+      ]
+    },
+    {
+      "source_name": "AHA (Cardiology)",
+      "category": "specialty_cardiology",
+      "crawl_urls": 10,
+      "crawl_content_kb": 0,
+      "crawl_error": "object of type 'NoneType' has no len()",
+      "search_urls": 10,
+      "search_content_kb": 249.693359375,
+      "search_error": null,
+      "map_urls": 0,
+      "map_error": null,
+      "extract_content_kb": 0,
+      "extract_error": null,
+      "sample_search_titles": [
+        "Guideline Essentials: AHA Clinical Slide Series",
+        "2024 ACC/AHA guideline on perioperative cardiovascular ...",
+        "[PDF] 2024 AHA/ACC Peripheral Artery Disease Guideline"
+      ]
+    },
+    {
+      "source_name": "ADA (Diabetes)",
+      "category": "specialty_diabetes",
+      "crawl_urls": 10,
+      "crawl_content_kb": 18.96875,
+      "crawl_error": null,
+      "search_urls": 10,
+      "search_content_kb": 312.3681640625,
+      "search_error": null,
+      "map_urls": 0,
+      "map_error": null,
+      "extract_content_kb": 0,
+      "extract_error": null,
+      "sample_search_titles": [
+        "Your Guide to the 2026 ADA Standards of Care - diaTribe.org",
+        "Standards of Care in Diabetes | ADA Clinical Guidelines",
+        "The American Diabetes Association Releases \u201cStandards of Car"
+      ]
+    },
+    {
+      "source_name": "CA Medical Board",
+      "category": "region_ca",
+      "crawl_urls": 9,
+      "crawl_content_kb": 0,
+      "crawl_error": "object of type 'NoneType' has no len()",
+      "search_urls": 10,
+      "search_content_kb": 555.8134765625,
+      "search_error": null,
+      "map_urls": 0,
+      "map_error": null,
+      "extract_content_kb": 0,
+      "extract_error": null,
+      "sample_search_titles": [
+        "[PDF] Telemedicine Policy Update - California Telehealth Res",
+        "California Telehealth Regulations and Laws - Wheel",
+        "Telehealth | Medical Board of California - CA.gov"
+      ]
+    }
+  ]
+}

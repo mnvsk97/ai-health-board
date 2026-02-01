@@ -14,7 +14,16 @@ from redis.commands.search.query import Query
 
 from .config import load_settings
 from .embeddings import generate_embedding
-from .models import ComplianceStatus, Guideline, Run, Scenario, TranscriptEntry
+from .models import (
+    BatchRun,
+    ComplianceStatus,
+    Guideline,
+    IntakeSession,
+    PatientIdentity,
+    Run,
+    Scenario,
+    TranscriptEntry,
+)
 
 SCENARIO_INDEX = "scenario_idx"
 TRANSCRIPT_INDEX = "transcript_idx"
@@ -75,20 +84,90 @@ def save_scenario(scenario: Scenario) -> None:
     _set_json(f"scenario:{scenario.scenario_id}", scenario.model_dump())
 
 
+def update_scenario(scenario_id: str, updates: dict) -> Scenario | None:
+    """Update a scenario with partial data."""
+    scenario = get_scenario(scenario_id)
+    if not scenario:
+        return None
+    # Apply updates
+    data = scenario.model_dump()
+    data.update(updates)
+    updated_scenario = Scenario(**data)
+    save_scenario(updated_scenario)
+    return updated_scenario
+
+
 def get_scenario(scenario_id: str) -> Scenario | None:
-    data = _get_json(f"scenario:{scenario_id}")
-    return Scenario(**data) if data else None
+    key = f"scenario:{scenario_id}"
+    if _use_memory():
+        data = _MEM_STORE.get(key)
+        return Scenario(**data) if data else None
+    client = _redis_client()
+    try:
+        key_type = client.type(key)
+        if key_type == "string":
+            data = _get_json(key)
+        elif key_type == "hash":
+            data_str = client.hget(key, "data")
+            data = json.loads(data_str) if data_str else None
+        else:
+            return None
+        return Scenario(**data) if data else None
+    except Exception as e:
+        logger.warning(f"Failed to get scenario {scenario_id}: {e}")
+        return None
 
 
 def list_scenarios() -> list[Scenario]:
     if _use_memory():
         return [Scenario(**v) for k, v in _MEM_STORE.items() if k.startswith("scenario:")]
-    keys = _redis_client().keys("scenario:*")
+    client = _redis_client()
+    keys = client.keys("scenario:*")
+    if not keys:
+        return []
+
     scenarios: list[Scenario] = []
+
+    # Use pipeline to batch all type checks
+    pipe = client.pipeline()
     for key in keys:
-        data = _get_json(key)
-        if data:
-            scenarios.append(Scenario(**data))
+        pipe.type(key)
+    types = pipe.execute()
+
+    # Separate keys by type
+    string_keys = []
+    hash_keys = []
+    for key, key_type in zip(keys, types):
+        if key_type == "string":
+            string_keys.append(key)
+        elif key_type == "hash":
+            hash_keys.append(key)
+
+    # Batch fetch string keys with MGET
+    if string_keys:
+        values = client.mget(string_keys)
+        for val in values:
+            if val:
+                try:
+                    data = json.loads(val)
+                    scenarios.append(Scenario(**data))
+                except Exception as e:
+                    logger.warning(f"Failed to parse scenario: {e}")
+
+    # Batch fetch hash keys with pipeline
+    if hash_keys:
+        pipe = client.pipeline()
+        for key in hash_keys:
+            pipe.hget(key, "data")
+        hash_values = pipe.execute()
+        for val in hash_values:
+            if val:
+                try:
+                    data = json.loads(val)
+                    scenarios.append(Scenario(**data))
+                except Exception as e:
+                    logger.warning(f"Failed to parse scenario: {e}")
+
     return scenarios
 
 
@@ -119,12 +198,18 @@ def list_runs(status: str | None = None, limit: int = 50) -> list[Run]:
     if _use_memory():
         runs = [Run(**v) for k, v in _MEM_STORE.items() if k.startswith("run:")]
     else:
-        keys = _redis_client().keys("run:*")
+        client = _redis_client()
+        keys = client.keys("run:*")
         runs = []
-        for key in keys:
-            data = _get_json(key)
-            if data:
-                runs.append(Run(**data))
+        if keys:
+            values = client.mget(keys)
+            for val in values:
+                if val:
+                    try:
+                        data = json.loads(val)
+                        runs.append(Run(**data))
+                    except Exception:
+                        continue
     if status:
         runs = [r for r in runs if r.status == status]
     runs.sort(key=lambda r: r.started_at or 0, reverse=True)
@@ -210,6 +295,21 @@ def get_guideline(guideline_id: str) -> Guideline | None:
     return Guideline(**data) if data else None
 
 
+def list_guidelines() -> list[Guideline]:
+    """List all registered guidelines."""
+    if _use_memory():
+        return [
+            Guideline(**v) for k, v in _MEM_STORE.items() if k.startswith("compliance:guideline:")
+        ]
+    keys = _redis_client().keys("compliance:guideline:*")
+    guidelines: list[Guideline] = []
+    for key in keys:
+        data = _get_json(key.decode() if isinstance(key, bytes) else key)
+        if data:
+            guidelines.append(Guideline(**data))
+    return guidelines
+
+
 def set_compliance_status(status: ComplianceStatus) -> None:
     _set_json(f"compliance:status:{status.target_id}", status.model_dump())
 
@@ -276,6 +376,66 @@ def save_attack_vector(attack_id: str, payload: dict[str, Any]) -> None:
 
 def get_attack_vector(attack_id: str) -> dict[str, Any] | None:
     return _get_json(f"attack:global:{attack_id}")
+
+
+def list_attack_vectors() -> list[dict[str, Any]]:
+    """List all attack vectors with their stats."""
+    if _use_memory():
+        vectors = []
+        for key, payload in _MEM_STORE.items():
+            if key.startswith("attack:global:"):
+                attack_id = key.replace("attack:global:", "")
+                stats = _get_attack_stats(attack_id)
+                attempts = int(stats.get("attempts") or 0)
+                successes = int(stats.get("successes") or 0)
+                severity_avg = (
+                    float(stats.get("severity_total") or 0.0) / attempts
+                    if attempts
+                    else 0.0
+                )
+                vectors.append({
+                    "attack_id": attack_id,
+                    "prompt": payload.get("prompt"),
+                    "category": payload.get("category"),
+                    "tags": payload.get("tags", []),
+                    "attempts": attempts,
+                    "success_rate": successes / attempts if attempts else 0.0,
+                    "severity_avg": severity_avg,
+                    "last_used": payload.get("last_used"),
+                })
+        return vectors
+
+    client = _redis_client()
+    keys = client.keys("attack:global:*")
+    if not keys:
+        return []
+
+    # Convert keys to strings
+    key_strs = [k.decode() if isinstance(k, bytes) else k for k in keys]
+
+    # Batch fetch all attack payloads with MGET
+    values = client.mget(key_strs)
+
+    vectors = []
+    for key_str, val in zip(key_strs, values):
+        if not val:
+            continue
+        try:
+            payload = json.loads(val)
+            attack_id = key_str.replace("attack:global:", "")
+            vectors.append({
+                "attack_id": attack_id,
+                "prompt": payload.get("prompt"),
+                "category": payload.get("category"),
+                "tags": payload.get("tags", []),
+                "attempts": 0,
+                "success_rate": 0.0,
+                "severity_avg": 0.0,
+                "last_used": payload.get("last_used"),
+            })
+        except Exception:
+            continue
+    return vectors
 
 
 def _get_attack_stats(attack_id: str) -> dict[str, Any]:
@@ -414,41 +574,168 @@ def get_prompt_overlay(tags: list[str]) -> dict[str, Any] | None:
     key = f"prompt:overlay:{':'.join(tags) if tags else 'global'}"
     return _get_json(key)
 
-    # Also maintain a URL index for lookups
-    index_key = f"guideline:url_index:{_url_to_key(source_url)}"
-    _set_json(index_key, {"url": source_url, "key": key})
+
+# =============================================================================
+# Intake Session Operations
+# =============================================================================
 
 
-def get_extracted_guideline_by_url(url: str) -> dict | None:
-    """Retrieve an extracted guideline by its source URL.
+def save_intake_session(session: IntakeSession) -> None:
+    """Save an intake session to Redis.
 
     Args:
-        url: Source URL of the guideline.
-
-    Returns:
-        Guideline dictionary if found, None otherwise.
+        session: IntakeSession model to save.
     """
-    key = f"guideline:extracted:{_url_to_key(url)}"
-    return _get_json(key)
+    session.updated_at = time.time()
+    _set_json(f"intake_session:{session.session_id}", session.model_dump())
 
 
-def list_extracted_guidelines() -> list[dict]:
-    """List all extracted guidelines.
+def get_intake_session(session_id: str) -> IntakeSession | None:
+    """Retrieve an intake session by ID.
+
+    Args:
+        session_id: Session identifier.
 
     Returns:
-        List of guideline dictionaries.
+        IntakeSession if found, None otherwise.
+    """
+    data = _get_json(f"intake_session:{session_id}")
+    return IntakeSession(**data) if data else None
+
+
+def list_intake_sessions(
+    status: str | None = None,
+    limit: int = 50,
+) -> list[IntakeSession]:
+    """List intake sessions with optional filtering.
+
+    Args:
+        status: Filter by current_stage if provided.
+        limit: Maximum number of sessions to return.
+
+    Returns:
+        List of IntakeSession objects sorted by updated_at descending.
     """
     if _use_memory():
-        return [
-            v for k, v in _MEM_STORE.items() if k.startswith("guideline:extracted:")
+        sessions = [
+            IntakeSession(**v)
+            for k, v in _MEM_STORE.items()
+            if k.startswith("intake_session:")
         ]
-    keys = _redis_client().keys("guideline:extracted:*")
-    guidelines: list[dict] = []
-    for key in keys:
-        data = _get_json(key)
-        if data:
-            guidelines.append(data)
-    return guidelines
+    else:
+        keys = _redis_client().keys("intake_session:*")
+        sessions = []
+        for key in keys:
+            data = _get_json(key)
+            if data:
+                sessions.append(IntakeSession(**data))
+
+    if status:
+        sessions = [s for s in sessions if s.current_stage == status]
+
+    sessions.sort(key=lambda s: s.updated_at, reverse=True)
+    return sessions[:limit]
+
+
+def delete_intake_session(session_id: str) -> bool:
+    """Delete an intake session.
+
+    Args:
+        session_id: Session identifier.
+
+    Returns:
+        True if deleted, False if not found.
+    """
+    key = f"intake_session:{session_id}"
+    if _use_memory():
+        if key in _MEM_STORE:
+            del _MEM_STORE[key]
+            return True
+        return False
+    try:
+        return _redis_client().delete(key) > 0
+    except Exception:
+        logger.exception("Failed to delete intake session {}", session_id)
+        return False
+
+
+# =============================================================================
+# Patient Operations
+# =============================================================================
+
+
+def save_patient(patient_id: str, patient_data: dict[str, Any]) -> None:
+    """Save patient data to Redis.
+
+    Args:
+        patient_id: Patient identifier.
+        patient_data: Patient data dictionary.
+    """
+    patient_data["updated_at"] = time.time()
+    _set_json(f"patient:{patient_id}", patient_data)
+
+
+def get_patient(patient_id: str) -> dict[str, Any] | None:
+    """Retrieve patient data by ID.
+
+    Args:
+        patient_id: Patient identifier.
+
+    Returns:
+        Patient data dictionary if found, None otherwise.
+    """
+    return _get_json(f"patient:{patient_id}")
+
+
+def lookup_patient_by_phone(phone: str) -> dict[str, Any] | None:
+    """Look up a patient by phone number.
+
+    Args:
+        phone: Phone number (digits only, normalized).
+
+    Returns:
+        Patient data if found, None otherwise.
+    """
+    # Normalize phone to digits
+    import re
+    digits = re.sub(r"\D", "", phone)
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+
+    # Use phone index
+    index_data = _get_json(f"patient:phone_index:{digits}")
+    if index_data and index_data.get("patient_id"):
+        return get_patient(index_data["patient_id"])
+    return None
+
+
+def index_patient_phone(patient_id: str, phone: str) -> None:
+    """Index a patient by phone number for lookups.
+
+    Args:
+        patient_id: Patient identifier.
+        phone: Phone number.
+    """
+    import re
+    digits = re.sub(r"\D", "", phone)
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+
+    _set_json(f"patient:phone_index:{digits}", {"patient_id": patient_id})
+
+
+def save_patient_identity(session_id: str, identity: PatientIdentity) -> None:
+    """Save patient identity verification result to session.
+
+    Args:
+        session_id: Intake session ID.
+        identity: Verified patient identity.
+    """
+    session = get_intake_session(session_id)
+    if session:
+        session.patient_identity = identity
+        session.current_stage = "insurance"  # Move to next stage
+        save_intake_session(session)
 
 
 # =============================================================================
@@ -579,3 +866,120 @@ def add_audit_log(run_id: str, event_type: str, data: dict[str, Any]) -> str:
         "ts": str(time.time()),
         "data": json.dumps(data),
     })
+
+
+# =============================================================================
+# Batch Run Operations
+# =============================================================================
+
+
+def create_batch_run(batch: BatchRun) -> None:
+    """Create a new batch run.
+
+    Args:
+        batch: BatchRun model to save.
+    """
+    batch.created_at = batch.created_at or time.time()
+    _set_json(f"batch:{batch.batch_id}", batch.model_dump())
+
+
+def get_batch_run(batch_id: str) -> BatchRun | None:
+    """Retrieve a batch run by ID.
+
+    Args:
+        batch_id: Batch identifier.
+
+    Returns:
+        BatchRun if found, None otherwise.
+    """
+    data = _get_json(f"batch:{batch_id}")
+    return BatchRun(**data) if data else None
+
+
+def update_batch_run(batch: BatchRun) -> None:
+    """Update a batch run.
+
+    Args:
+        batch: BatchRun model to update.
+    """
+    _set_json(f"batch:{batch.batch_id}", batch.model_dump())
+
+
+def list_batch_runs(status: str | None = None, limit: int = 20) -> list[BatchRun]:
+    """List batch runs with optional status filtering.
+
+    Args:
+        status: Filter by batch status if provided.
+        limit: Maximum number of batches to return.
+
+    Returns:
+        List of BatchRun objects sorted by created_at descending.
+    """
+    if _use_memory():
+        batches = [
+            BatchRun(**v)
+            for k, v in _MEM_STORE.items()
+            if k.startswith("batch:")
+        ]
+    else:
+        client = _redis_client()
+        keys = client.keys("batch:*")
+        # Filter out cancel flag keys
+        keys = [k for k in keys if ":cancel:" not in (k.decode() if isinstance(k, bytes) else k)]
+        batches = []
+        if keys:
+            values = client.mget(keys)
+            for val in values:
+                if val:
+                    try:
+                        data = json.loads(val)
+                        batches.append(BatchRun(**data))
+                    except Exception:
+                        continue
+
+    if status:
+        batches = [b for b in batches if b.status == status]
+
+    batches.sort(key=lambda b: b.created_at or 0, reverse=True)
+    return batches[:limit]
+
+
+def set_batch_cancel_flag(batch_id: str) -> None:
+    """Set a cancel flag for a batch run.
+
+    Args:
+        batch_id: Batch identifier.
+    """
+    key = f"batch:cancel:{batch_id}"
+    if _use_memory():
+        _MEM_STORE[key] = True
+        return
+    _redis_client().set(key, "1", ex=3600)  # 1 hour TTL
+
+
+def is_batch_canceled(batch_id: str) -> bool:
+    """Check if a batch run has been canceled.
+
+    Args:
+        batch_id: Batch identifier.
+
+    Returns:
+        True if the batch has been canceled.
+    """
+    key = f"batch:cancel:{batch_id}"
+    if _use_memory():
+        return _MEM_STORE.get(key, False)
+    return bool(_redis_client().get(key))
+
+
+def clear_batch_cancel_flag(batch_id: str) -> None:
+    """Clear the cancel flag for a batch run.
+
+    Args:
+        batch_id: Batch identifier.
+    """
+    key = f"batch:cancel:{batch_id}"
+    if _use_memory():
+        _MEM_STORE.pop(key, None)
+        return
+    _redis_client().delete(key)

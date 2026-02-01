@@ -1,0 +1,9 @@
+# Pipecat Cloud Deployment (Intake Agent)
+# Deploy with: pcc deploy -c pipecat_cloud/pcc-deploy-intake.toml
+
+agent_name = "preclinical-intake-agent"
+image = "mnvsk97/ai-health-board-agent:1.0"
+secret_set = "ai-health-board-secrets"
+
+[scaling]
+min_instances = 0

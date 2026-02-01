@@ -1,0 +1,73 @@
+{
+  "target": "https://www.cdc.gov/clinical-guidance",
+  "query": "CDC clinical guidelines emergency protocols",
+  "results": [
+    {
+      "approach": "crawl-first",
+      "urls_found": 0,
+      "pages_with_content": 0,
+      "avg_content_length": 0,
+      "total_content_chars": 0,
+      "api_calls": 1,
+      "duration_seconds": 2.1430411338806152,
+      "sample_titles": [],
+      "raw_urls": [],
+      "errors": []
+    },
+    {
+      "approach": "search-first",
+      "urls_found": 10,
+      "pages_with_content": 10,
+      "avg_content_length": 8581,
+      "total_content_chars": 85815,
+      "api_calls": 1,
+      "duration_seconds": 3.693474769592285,
+      "sample_titles": [
+        "Clinical Guidance and Resources for Professionals - CDC",
+        "Emergency Management Pocket Guide for Clinicians - CDC",
+        "Emergency Preparedness and Response | CDC",
+        "Emergency Preparedness and Response - CDC",
+        "Guidelines and Guidance Library | Infection Control - CDC"
+      ],
+      "raw_urls": [
+        "https://www.cdc.gov/radiation-emergencies/hcp/clinical-guidance/index.html",
+        "https://www.cdc.gov/radiation-emergencies/hcp/clinical-guidance/pocket-guide.html",
+        "https://www.cdc.gov/emergency/index.html",
+        "https://www.cdc.gov/niosh/emres/",
+        "https://www.cdc.gov/infection-control/hcp/guidance/index.html",
+        "https://www.ccohs.ca/infectious-diseases/emergency-response",
+        "https://www.cdc.gov/readiness/php/capabilities/index.html",
+        "https://www.cdc.gov/niosh/emres/safety/index.html",
+        "https://archive.cdc.gov/www_cdc_gov/sars/guidance/c-healthcare/preparedness.html",
+        "https://www.who.int/our-work/health-emergencies"
+      ],
+      "errors": []
+    },
+    {
+      "approach": "map-extract",
+      "urls_found": 0,
+      "pages_with_content": 0,
+      "avg_content_length": 0,
+      "total_content_chars": 0,
+      "api_calls": 1,
+      "duration_seconds": 1.4963219165802002,
+      "sample_titles": [],
+      "raw_urls": [],
+      "errors": [
+        "No guideline URLs found after filtering"
+      ]
+    },
+    {
+      "approach": "search-crawl",
+      "urls_found": 0,
+      "pages_with_content": 0,
+      "avg_content_length": 0,
+      "total_content_chars": 0,
+      "api_calls": 2,
+      "duration_seconds": 4.399435043334961,
+      "sample_titles": [],
+      "raw_urls": [],
+      "errors": []
+    }
+  ]
+}

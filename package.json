@@ -1,0 +1,10 @@
+{
+  "name": "ai-health-board-stagehand",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@browserbasehq/stagehand": "^3.0.8",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  }
+}

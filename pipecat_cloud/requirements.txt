@@ -1,0 +1,12 @@
+pipecat-ai[daily,openai,cartesia,webrtc,silero]>=0.0.47
+pipecat-ai-small-webrtc-prebuilt>=0.0.1
+python-dotenv>=1.0.0
+fastapi>=0.110.0
+uvicorn>=0.27.0
+pipecatcloud>=0.0.25
+loguru>=0.7.2
+openai>=1.12.0
+redis>=5.0.1
+httpx>=0.27.0
+pydantic>=2.6.0
+weave>=0.50.0

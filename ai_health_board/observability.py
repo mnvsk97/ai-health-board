@@ -49,6 +49,13 @@ def trace_op(name: str | None = None):
             return fn
         return decorator
     init_weave()
+    if name and name.startswith(("grading.", "grader.")):
+        def decorator(fn: Callable[..., T]) -> Callable[..., T]:
+            def wrapped(*args, **kwargs):
+                with trace_attrs({"trace.name": name}):
+                    return fn(*args, **kwargs)
+            return wrapped  # type: ignore[return-value]
+        return decorator
     if weave and hasattr(weave, "op"):
         return weave.op(name=name) if name else weave.op()
     def decorator(fn: Callable[..., T]) -> Callable[..., T]:

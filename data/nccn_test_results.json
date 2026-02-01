@@ -1,0 +1,57 @@
+[
+  {
+    "method": "crawl",
+    "pages": 20,
+    "total_kb": 44.2958984375,
+    "urls": [
+      "https://guidelines.nccn.org/guidelines/AML3_2026",
+      "https://guidelines.nccn.org/guidelines/Bcell1_2026",
+      "https://guidelines.nccn.org/guidelines/HL1_2026",
+      "https://guidelines.nccn.org/guidelines/NSCLC3_2026",
+      "https://guidelines.nccn.org/guidelines/Prostate5_2026",
+      "https://guidelines.nccn.org/guidelines/SCLC2_2026",
+      "https://www.nccn.org/docs/default-source/global/global-clinical-resources-overview.pdf?sfvrsn=efd8818a_8",
+      "https://guidelines.nccn.org/guidelines/GeneticsBOPP2_2026",
+      "https://guidelines.nccn.org/guidelines/Breast1_2026",
+      "https://guidelines.nccn.org/guidelines/HCC2_2025",
+      "https://guidelines.nccn.org/guidelines/Uterine2_2026",
+      "https://guidelines.nccn.org/guidelines/Rectal4_2025",
+      "https://guidelines.nccn.org/guidelines/Colon5_2025",
+      "https://guidelines.nccn.org/guidelines/Cervical2_2026",
+      "https://guidelines.nccn.org/guidelines/Biliary2_2025",
+      "https://guidelines.nccn.org/guidelines/HGF3-2026",
+      "https://guidelines.nccn.org/guidelines/Kidney1_2026",
+      "https://guidelines.nccn.org/guidelines/HNC1_2026",
+      "https://guidelines.nccn.org/guidelines/Bladder3_2025",
+      "https://guidelines.nccn.org/guidelines/MM5_2026"
+    ]
+  },
+  {
+    "method": "search",
+    "pages": 10,
+    "total_kb": 194.2587890625,
+    "urls": [
+      "https://www.nccn.org/guidelines/guidelines-process/development-and-update-of-guidelines",
+      "https://www.nccn.org/guidelines/guidelines-process/about-nccn-clinical-practice-guidelines",
+      "https://www.nccn.org/patientresources/patient-resources/how-nccn-guidelines-for-patients-are-developed",
+      "https://www.nccn.org/guidelines/category_1",
+      "https://www.nccn.org/guidelines/category_2",
+      "https://www.nccn.org/guidelines/guidelines-detail?category=1&id=1450",
+      "https://www.nccn.org/guidelines/guidelines-detail?id=1419",
+      "https://www.nccn.org/guidelines/guidelines-detail",
+      "https://www.nccn.org/guidelines/nccn-guidelines",
+      "https://www.nccn.org/compendia-templates/nccn-templates-main/browse-by-cancer-type"
+    ]
+  },
+  {
+    "method": "map",
+    "urls_found": 0,
+    "urls": []
+  },
+  {
+    "method": "browserbase",
+    "content_kb": 16.6884765625,
+    "title": "Treatment by Cancer Type",
+    "content_preview": "<iframe src=https://www.googletagmanager.com/ns.html?id=GTM-WSC8GXR\nheight=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe>\n\n\n\n\n    NCCN Awards Grants to Improve Care for People with Metastatic Breast Cancer (mBC)\n\n\n\n\n\n    \n\n\n    \n\n        \n\n    \n    \n\n\n\n\n\n\n    \n\n\n\n\n\n\n\n\n    \n    \n    \n\n\n    \n \n    \n    When autocomplete results are available use up and down arrows to review and enter to select.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n    \n    \n\n\n\n\n\n    \n\n\n\n\n\n\n\n\n    \n\n\n    \n\n\n\n\n    \n\n\n\n\n    \n\n\n\n\n\n\n\n    \n\t\n\t\t\n\t\t\t\n\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\n\t\t\t\n\t\t\n\t\n\n\n\n\n\n    NCCN Guidelines\n\n\n\n\n\n\n\n    \n\n\n    \n\n\n\n\n\n    \n\n\n\n\n\n\n\n    \n    \n\n\n\n\n\n\n    \n        \n            Treatment by Cancer Type\n        \n    \n    \n        \n            \n                    NCCN Clinical Practice Guidelines in Oncology (NCCN Guidelines\u00ae) are posted with the latest update date and version number.\n            \n        \n    \n\n    \n        \n                \n                    \n                        Acute Lymphoblastic Leukemia\n                   "
+  }
+]
